@@ -24,14 +24,14 @@
             padding:3px;
         }
         #maincont>div:nth-child(3){
-            width:600px;
+            width:500px;
             height: 35px;
             padding:2px 10px 4px 160px;
             display: flex   ;
         }
         
         #maincont>div:nth-child(4){
-            width:64px;
+            width:50px;
             height: 50px;
         }
         #videos{
@@ -61,7 +61,58 @@
             width:70px;
             height:40px;
         }
+
         
+    #signup{
+            width: 20px;
+        }
+        input{
+            margin-top: 3px;
+            color: black;
+        }
+        #signin{
+            width: 20px;
+        }
+        .modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 70px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 60%;
+}
+
+/* The Close Button */
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+#login{
+    margin-top:4px;
+}
     </style>
   </head>
   <body>
@@ -102,12 +153,47 @@
                     notifications
                 </span>
             </div>
-            <div id="profilePic"><span style="padding: 8px 2px 6px 15px;margin: auto;" class="material-icons">
-                account_circle
-                </span></div>
+            <div id="login">
+                <button style="color: black;height: 90%; width: 100px;" id="myBtn">SignUp/Login</button>
+            </div>
         </div>
     </nav>
     
+    <h2>Most popular videos in India :-</h2>
+    
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+    
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span class="close">&times;</span>
+    
+        <div style="margin-left:300px; ;">
+            <div id="signup">
+                <h1 style="color: black;">Signup</h1>
+                <form onsubmit="Signup(event)" id="signup-form">
+                    <input type="text" id="name" placeholder="name" />
+                    <input type="text" id="email" placeholder="email" />
+                    <input type="password" id="password" placeholder="password" />
+                    <input type="text" id="username" placeholder="username" />
+                    <input type="number" id="mobile" placeholder="mobile" />
+                    <input type="text" id="description" placeholder="description" />
+                    <input style="color: black;" type="submit" />
+                  </form>
+          
+            </div>
+            <div  id="signin">
+                <h1 style="color: black;"> login</h1>
+                <form onsubmit="login(event)" id="signin-form">
+                <input type="text" id="user" placeholder="username" />
+                <input type="password" id="pass" placeholder="password" />
+                <input type="submit" />
+                </form>
+            </div>
+        </div>  
+        
+      </div>    
+    </div>
 
     <div id="videos"></div>
   </body>
@@ -166,6 +252,126 @@ function appendVideo(video_data){
 }
 
 popularVideos();
+
+/////signup login integration
+
+
+var modal = document.getElementById("myModal");
+
+// Get the button that opens the modal
+var btn = document.getElementById("myBtn");
+
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("close")[0];
+
+// When the user clicks the button, open the modal 
+btn.onclick = function() {
+  modal.style.display = "block";
+}
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+
+
+///sign-in & signup part:-
+
+
+    function Signup(e){
+        e.preventDefault()
+        let form = document.getElementById("signup-form");
+        let user_data = {
+            name:form.name.value,
+            email:form.email.value,
+            password:form.password.value,
+            username:form.username.value,
+            mobile:form.mobile.value,
+            description:form.description.value,
+        };
+        user_data = JSON.stringify(user_data)
+        fetch("https://masai-api-mocker.herokuapp.com/auth/register", {
+            method:"POST",
+            body: user_data,
+            headers: {
+                "Content-type": "application/json",
+            },
+        })
+        .then((res) => {
+            return res.json();
+        })
+        .then((res) =>{
+            console.log('res:', res);
+            alert(res.message);
+        })
+        .catch((err) =>{
+        console.log('err:', err);
+        
+        });
+    }
+    function login(ev){
+        ev.preventDefault()
+        let form = document.getElementById("signin-form");
+        let user_data = {
+            username:form.user.value,
+            password:form.pass.value,
+            
+        };
+        let data_to_send = JSON.stringify(user_data);
+        console.log('data_to_send:', data_to_send)
+        fetch("https://masai-api-mocker.herokuapp.com/auth/login", {
+            method:"POST",
+            body: data_to_send,
+            
+            headers: {
+                "Content-type": "application/json",
+            },
+        })
+        .then((res) =>{
+            return res.json();
+        })
+        .then((res) =>{
+            console.log('res:', res);
+            fetchmyData(user_data.username, res.token)
+        })
+        .catch((err) =>{
+        console.log('err:', err);
+        });
+    }
+    function fetchmyData(username, token) {
+        fetch(`https://masai-api-mocker.herokuapp.com/user/${username}`, {
+            headers: {
+                "Content-Type" : "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        })
+        .then((res) =>{
+            return res.json();
+        })
+        .then((res) =>{
+            console.log('res :>> ', res);
+
+            alert("login successfull!")
+            let user_nm=document.getElementById("login");
+            user_nm.innerText=null;
+            user_nm.style.fontSize="26px";
+            user_nm.style.marginLeft="8px";
+            user_nm.style.width="150px";
+            user_nm.style.color="black";
+            user_nm.innerText=res.name;
+        })
+        .catch((err) =>{
+        console.log('err:', err);
+        });
+    }
+
 
 
 </script>
